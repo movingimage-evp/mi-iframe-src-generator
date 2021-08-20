@@ -1,7 +1,7 @@
 import VideoJS from "../components/video";
 import { useEffect } from "react";
 
-const Video = ({ data }) => {
+const Video = ({ videoData, error }) => {
   useEffect(() => {
     const receiveMessage = (event) => {
       const message = {
@@ -14,14 +14,17 @@ const Video = ({ data }) => {
     window.addEventListener('message', receiveMessage);
   });
 
-  const { videoSources } = data;
-  const htmlSources = videoSources.html;
   const sources = []
 
-  const qualities = Object.keys(htmlSources);
-  qualities.forEach(quality => {
-    sources.push(...htmlSources[quality].map(source => ({ src: source.source, type: source.mimeType, label: quality })))
-  });
+  if (videoData) {
+    const { videoSources } = videoData;
+    const htmlSources = videoSources.html;
+    const qualities = Object.keys(htmlSources);
+    qualities.forEach(quality => {
+      sources.push(...htmlSources[quality].map(source => ({ src: source.source, type: source.mimeType, label: quality })))
+    });
+  }
+
   const videoJsOptions = {
     autoplay: false,
     controls: true,
@@ -32,20 +35,38 @@ const Video = ({ data }) => {
 
   return (
     <>
-      <VideoJS options={videoJsOptions} />
+      {error ? <h1>Video not available</h1> : <VideoJS options={videoJsOptions} />}
     </>
   );
 }
 
 export default Video;
 
+const isValidToken = (token) => {
+  // Logic to determine if the token is valid, like size, etc.
+  return true;
+}
+
 export async function getServerSideProps({ query }) {
   const videoId = query['video-id'];
   const playerId = query['player-id'];
-  const channelId = query['channel-id'];
+  const channelId = query['channel-id']; // To be defined
+  const token = query['token'];
 
-  const res = await fetch(`https://d.video-cdn.net/play/player/${playerId}/video/${videoId}`)
-  const data = await res.json()
+  let url = `https://d.video-cdn.net/play/player/${playerId}/video/${videoId}`
+  if (token && isValidToken(token)) {
+    url = url + `?token=${token}`;
+  }
 
-  return { props: { data } }
+  try {
+
+    const res = await fetch(url);
+    const videoData = await res.json();
+    return { props: { videoData } };
+
+  } catch (error) {
+
+    return { props: { error: error.message } };
+
+  }
 }
