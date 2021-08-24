@@ -1,19 +1,6 @@
 import VideoJS from "../components/video";
-import { useEffect } from "react";
 
 const Video = ({ videoData, error }) => {
-  useEffect(() => {
-    const receiveMessage = (event) => {
-      const message = {
-        event: 'ready',
-        method: 'ping'
-      }
-      event.source.postMessage(message, event.origin);
-    }
-
-    window.addEventListener('message', receiveMessage);
-  });
-
   const sources = []
 
   if (videoData) {
@@ -35,7 +22,9 @@ const Video = ({ videoData, error }) => {
 
   return (
     <>
-      {error ? <h1>Video not available</h1> : <VideoJS options={videoJsOptions} />}
+      {error
+      ? <h1>Video not available</h1>
+      : <VideoJS options={videoJsOptions} />}
     </>
   );
 }
