@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { emitEvent, processMessage } from './utils';
+import { processMessage } from './utils';
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 
 export const VideoJS = (props) => {
 
   const videoRef = useRef(null);
-  const playerRef = useRef(null)
+  const playerRef = useRef(null);
   const { options } = props;
 
   const VideoHtml = (props) => (
@@ -15,8 +15,13 @@ export const VideoJS = (props) => {
     </div>
   );
 
+  const receiveMessage = (event) => processMessage(event, playerRef.current);
+
   useEffect(() => {
-    window.addEventListener('message', (event) => processMessage(event, playerRef.current));
+    window.addEventListener('message', receiveMessage);
+    return () => {
+      window.removeEventListener('message', receiveMessage);
+    };
   }, []);
 
   useEffect(() => {
@@ -24,7 +29,6 @@ export const VideoJS = (props) => {
 
     if (videoElement) {
       playerRef.current = videojs(videoElement, options);
-      playerRef.current.on(['play', 'pause', 'stop', 'ended'], emitEvent);
     }
     return () => {
       if (playerRef.current) {

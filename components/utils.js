@@ -12,12 +12,21 @@ const isPingEvent = (event) => {
 
 const callPlayerMethod = (event, player) => {
   const method = event?.data?.method;
+  const value = event?.data?.value;
+
   switch (method) {
     case 'play':
-      player.play();
+      player.play().then(()=> emitMethod('play'));
       break;
     case 'pause':
       player.pause();
+      emitMethod('pause');
+      break;
+    case 'addEventListener':
+      player.on(value, emitEvent);
+      break;
+    case 'removeEventListener':
+      player.off(value, emitEvent);
       break;
   }
 }
@@ -30,12 +39,24 @@ export const processMessage = (event, player) => {
   }
 }
 
-export const emitEvent = (event) => {
+export const emitMethod = (method) => {
   try {
-    const message = {
-      method: event.type
+    const data = {
+      method
+      // We can send data here if we need to
     }
 
-    parent.postMessage(message, "*");
-  } catch {} // Nothing to do, there's no parent
+    parent.postMessage(data, "*");
+  } catch { } // Nothing to do, there's no parent
+}
+
+export const emitEvent = (event) => {
+  try {
+    const data = {
+      event: event.type
+      // We can send data here if we need to
+    }
+
+    parent.postMessage(data, "*");
+  } catch { } // Nothing to do, there's no parent
 }

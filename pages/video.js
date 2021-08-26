@@ -42,7 +42,7 @@ export async function getServerSideProps({ query }) {
   const channelId = query['channel-id']; // To be defined
   const token = query['token'];
 
-  let url = `https://d.video-cdn.net/play/player/${playerId}/video/${videoId}`
+  let url = `https://d.video-cdn.net/play/player/${playerId}/video/${videoId}`;
   if (token && isValidToken(token)) {
     url = url + `?token=${token}`;
   }
